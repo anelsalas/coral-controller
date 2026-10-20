@@ -1,0 +1,43 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "arm64-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "toolchainFile": "${sourceDir}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake",
+      "architecture": { "value": "arm64", "strategy": "external" },
+      "toolset": { "value": "host=arm64", "strategy": "external" },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl.exe",
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "VCPKG_TARGET_TRIPLET": "arm64-windows",
+        "VCPKG_HOST_TRIPLET": "arm64-windows",
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/vcpkg_installed",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    { "name": "arm64-debug", "displayName": "ARM64 Debug", "inherits": "arm64-base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" } },
+    { "name": "arm64-release", "displayName": "ARM64 Release", "inherits": "arm64-base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" } }
+  ],
+  "buildPresets": [
+    { "name": "arm64-debug", "configurePreset": "arm64-debug" },
+    { "name": "arm64-release", "configurePreset": "arm64-release" }
+  ],
+  "testPresets": [
+    { "name": "arm64-debug", "configurePreset": "arm64-debug",
+      "output": { "outputOnFailure": true },
+      "filter": { "exclude": { "label": "hardware" } } },
+    { "name": "arm64-release", "configurePreset": "arm64-release",
+      "output": { "outputOnFailure": true },
+      "filter": { "exclude": { "label": "hardware" } } },
+    { "name": "arm64-release-hardware", "displayName": "Hardware tests (board connected)",
+      "configurePreset": "arm64-release",
+      "output": { "outputOnFailure": true, "verbosity": "verbose" },
+      "filter": { "include": { "label": "hardware" } } }
+  ]
+}

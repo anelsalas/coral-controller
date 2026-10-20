@@ -1,0 +1,12 @@
+/build/
+/out/
+/vcpkg_installed/
+/snapshots/
+/tools/vcpkg/vcpkg.exe
+/tools/vcpkg/buildtrees/
+/tools/vcpkg/downloads/
+/tools/vcpkg/packages/
+/tools/vcpkg/installed/
+.vs/
+*.user/tools/vcpkg-cache/
+/Testing/

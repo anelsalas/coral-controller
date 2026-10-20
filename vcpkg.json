@@ -1,0 +1,15 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "coral-controller",
+  "version": "0.1.0",
+  "builtin-baseline": "469a0504e4a6ebf6173d1c0f51a7fa34c382fd43",
+  "dependencies": [
+    { "name": "opencv4", "default-features": false, "features": [ "jpeg", "png" ] },
+    { "name": "imgui", "features": [ "win32-binding", "dx11-binding" ] },
+    "gtest",
+    "boost-asio",
+    "boost-json",
+    "boost-crc",
+    "boost-process"
+  ]
+}
