@@ -65,7 +65,10 @@ Flashing uses `C:\Users\anels\Source\coralmicro\scripts\flashtool.py` and its ve
 (libusb from the venv's `libusb-package`). Close Coral Controller before flashing.
 `CoralController.exe --measure-fps 30` prints the measured fps and the detected protocol.
 
-Known issue: the SDK's `CdcAcm::Transmit` times out after 200 ms when no host reads; a late
-completion can leave its semaphore out of step, so later packets get corrupted (the viewer shows
-"packet CRC mismatch"). Fix: reset the board (replug, or flash again). It was seen once, after the
-board had streamed for a long time with no host connected.
+Known issue (open, see REQUIREMENTS D-18): after the PC closes COM8 while a USB transfer is in flight, the SDK's
+`CdcAcm::Transmit` can be left one semaphore "give" ahead, so later 512-byte chunks overwrite the transfer still
+on the wire (viewer: "packet CRC mismatch", rising rejected/dropped counts). camera_stream_binary paces chunks
+(PacedChunkSink) to reduce this, but it does not fully fix it, and once the board's USB stopped responding
+completely. Recovery: unplug and replug the board. A full fix needs a change in the SDK (not done; pending your decision).
+If the board's USB hangs, Coral Controller stays responsive and exits after 2 s (exit code 4,
+"Board did not release the serial port"); Windows may keep the process entry until the board is replugged.
