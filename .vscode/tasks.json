@@ -47,8 +47,9 @@
     },
     {
       "label": "Tests: hardware (board connected)",
-      "type": "shell",
-      "command": "ctest --preset arm64-release-hardware --output-on-failure",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-Command", "$vs = & \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\Installer\\vswhere.exe\" -latest -products * -property installationPath; $env:PATH = \"$vs\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin;$env:PATH\"; ctest --preset arm64-release-hardware --output-on-failure; exit $LASTEXITCODE"],
       "options": { "cwd": "${workspaceFolder}" },
       "problemMatcher": []
     }
