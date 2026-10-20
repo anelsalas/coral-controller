@@ -13,6 +13,11 @@ TextFrameParser::TextFrameParser(ITextProtocolListener& listener, std::size_t ma
 
 const ParseCounters& TextFrameParser::counters() const { return counters_; }
 
+void TextFrameParser::reset() {
+    line_.clear();
+    discardingUntilNewline_ = false;
+}
+
 void TextFrameParser::feed(std::span<const std::uint8_t> bytes) {
     for (const std::uint8_t value : bytes) acceptCharacter(static_cast<char>(value));
 }

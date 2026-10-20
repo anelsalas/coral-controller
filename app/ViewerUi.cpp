@@ -126,6 +126,8 @@ void ViewerUi::drawStatusWindow(const StatusSnapshot& status) {
                 static_cast<unsigned long long>(status.invalidBase64Frames),
                 static_cast<unsigned long long>(status.overlongLines),
                 static_cast<unsigned long long>(status.jpegDecodeErrors));
+    ImGui::Text("Packets: rejected %llu, dropped %llu", static_cast<unsigned long long>(status.rejectedPackets),
+                static_cast<unsigned long long>(status.droppedPackets));
     if (!status.lastError.empty()) ImGui::TextColored(kErrorColor, "Last: %s", status.lastError.c_str());
     ImGui::End();
 }

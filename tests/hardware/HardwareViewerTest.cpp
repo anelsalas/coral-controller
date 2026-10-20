@@ -34,7 +34,7 @@ struct LiveViewer {
     ViewerSession session{frames, status, clock};
     ConnectionManager connection{enumerator, port, clock,
                                  [this](std::span<const std::uint8_t> bytes) { session.onBytes(bytes); },
-                                 status};
+                                 session};
 
     template <typename Predicate>
     bool runUntil(Predicate predicate, std::chrono::seconds limit) {

@@ -22,6 +22,8 @@ struct StatusSnapshot {
     std::uint64_t invalidBase64Frames = 0;
     std::uint64_t overlongLines = 0;
     std::uint64_t jpegDecodeErrors = 0;
+    std::uint64_t rejectedPackets = 0;
+    std::uint64_t droppedPackets = 0;
     std::string lastError;
     std::vector<std::string> recentLogLines;
 };
@@ -32,6 +34,8 @@ class StatusModel final : public IConnectionListener {
 public:
     static constexpr std::size_t kMaxLogLines = 200;
     static constexpr const char* kTextProtocolName = "text (FRAME:base64)";
+    static constexpr const char* kBinaryProtocolName = "binary (CRLP v1)";
+    static constexpr const char* kDetectingProtocol = "detecting...";
     static constexpr const char* kUnknownBoardApp = "unknown";
 
     void onConnected(const SerialPortInfo& port) override;
@@ -43,6 +47,11 @@ public:
     void onDecodeError(const std::string& message);
     void onLogLine(const std::string& line);
     void onError(const std::string& message);
+    void onProtocolDetected(const std::string& protocolName);
+    void onBoardIdentity(const std::string& appName, const std::string& appVersion);
+    void onIncompatibleProtocol(unsigned boardProtocolVersion);
+    void onPacketRejected(const std::string& detail);
+    void onDroppedPackets(std::uint64_t totalDropped);
 
     StatusSnapshot snapshot(TimePoint now);
 

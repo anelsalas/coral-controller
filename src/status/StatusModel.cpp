@@ -6,8 +6,8 @@ void StatusModel::onConnected(const SerialPortInfo& port) {
     std::lock_guard lock(mutex_);
     state_.link = LinkState::Connected;
     state_.portName = port.portName;
-    state_.protocol = kTextProtocolName;
-    state_.boardApp = kUnknownBoardApp;  // the text protocol does not announce the app (PROTO-006 will)
+    state_.protocol = kDetectingProtocol;
+    state_.boardApp = kUnknownBoardApp;  // only the binary protocol announces the app (PROTO-006)
     state_.lastError.clear();
 }
 
@@ -47,6 +47,34 @@ void StatusModel::onLogLine(const std::string& line) {
     std::lock_guard lock(mutex_);
     logLines_.push_back(line);
     if (logLines_.size() > kMaxLogLines) logLines_.pop_front();
+}
+
+void StatusModel::onProtocolDetected(const std::string& protocolName) {
+    std::lock_guard lock(mutex_);
+    state_.protocol = protocolName;
+}
+
+void StatusModel::onBoardIdentity(const std::string& appName, const std::string& appVersion) {
+    std::lock_guard lock(mutex_);
+    state_.boardApp = appName + " " + appVersion;
+}
+
+void StatusModel::onIncompatibleProtocol(unsigned boardProtocolVersion) {
+    std::lock_guard lock(mutex_);
+    ++state_.rejectedPackets;
+    state_.boardApp = "incompatible firmware (protocol v" + std::to_string(boardProtocolVersion) + ")";
+    state_.lastError = state_.boardApp;
+}
+
+void StatusModel::onPacketRejected(const std::string& detail) {
+    std::lock_guard lock(mutex_);
+    ++state_.rejectedPackets;
+    state_.lastError = detail;
+}
+
+void StatusModel::onDroppedPackets(std::uint64_t totalDropped) {
+    std::lock_guard lock(mutex_);
+    state_.droppedPackets = totalDropped;
 }
 
 StatusSnapshot StatusModel::snapshot(TimePoint now) {

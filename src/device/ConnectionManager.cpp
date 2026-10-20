@@ -49,11 +49,11 @@ void ConnectionManager::tryConnect() {
         std::lock_guard lock(failureMutex_);
         pendingReadFailure_.reset();
     }
+    state_ = ConnectionState::Connected;
+    listener_.onConnected(board);  // before the reader starts: listeners may reset per-connection state
     reader_ = std::make_unique<SerialReader>(port_, onData_,
                                              [this](const std::string& message) { recordReadFailure(message); });
     reader_->start();
-    state_ = ConnectionState::Connected;
-    listener_.onConnected(board);
 }
 
 void ConnectionManager::recordReadFailure(const std::string& message) {

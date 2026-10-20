@@ -8,6 +8,7 @@ add_library(coral_core STATIC
     device/ConnectionManager.cpp
     protocol/Base64.cpp
     protocol/TextFrameParser.cpp
+    protocol/ProtocolDetector.cpp
     imaging/JpegDecoder.cpp
     imaging/LatestFrameBuffer.cpp
     imaging/SnapshotWriter.cpp
@@ -30,6 +31,7 @@ add_library(coral_core STATIC
     viewer/ViewerSession.cpp)
 target_include_directories(coral_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(coral_core PUBLIC
+    coral_protocol
     opencv_core opencv_imgproc opencv_imgcodecs
     Boost::asio
     setupapi)

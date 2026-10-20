@@ -109,7 +109,7 @@ private:
     LatestFrameBuffer frames_;
     ViewerSession session_{frames_, status_, clock_};
     ConnectionManager connection_{enumerator_, port_, clock_,
-                                  [this](std::span<const std::uint8_t> bytes) { session_.onBytes(bytes); }, status_};
+                                  [this](std::span<const std::uint8_t> bytes) { session_.onBytes(bytes); }, session_};
     SnapshotWriter snapshots_;
     FilterPipeline pipeline_;
     FilterPanelModel panel_;

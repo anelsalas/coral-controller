@@ -34,6 +34,7 @@ public:
     explicit TextFrameParser(ITextProtocolListener& listener, std::size_t maxLineLength = kDefaultMaxLineLength);
 
     void feed(std::span<const std::uint8_t> bytes);
+    void reset();  // drop any partial line (new connection)
     const ParseCounters& counters() const;
 
 private:

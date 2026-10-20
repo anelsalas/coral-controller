@@ -13,10 +13,12 @@ add_compile_definitions(_WIN32_WINNT=0x0A00 WIN32_LEAN_AND_MEAN NOMINMAX UNICODE
 
 find_package(OpenCV CONFIG REQUIRED COMPONENTS core imgproc imgcodecs)
 find_package(boost_asio CONFIG REQUIRED)
+find_package(boost_crc CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
 
 enable_testing()
+add_subdirectory(shared)
 add_subdirectory(src)
 add_subdirectory(app)
 add_subdirectory(tests)
