@@ -1,0 +1,56 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "App: build + unit/integration tests",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/build.ps1"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Firmware: build camera_stream_binary",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/build-firmware.ps1"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Firmware: flash camera_stream_binary",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/flash-firmware.ps1"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": "Firmware: build camera_stream_binary",
+      "problemMatcher": []
+    },
+    {
+      "label": "Firmware: run camera_stream_binary from RAM",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/flash-firmware.ps1", "-Ram"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": "Firmware: build camera_stream_binary",
+      "problemMatcher": []
+    },
+    {
+      "label": "Firmware: restore camera_streaming_serial (text)",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/flash-firmware.ps1", "-RestoreTextApp"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Tests: hardware (board connected)",
+      "type": "shell",
+      "command": "ctest --preset arm64-release-hardware --output-on-failure",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    }
+  ]
+}

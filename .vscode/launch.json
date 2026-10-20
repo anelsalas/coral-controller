@@ -11,6 +11,15 @@
       "console": "integratedTerminal"
     },
     {
+      "name": "Coral Controller: measure fps (30 s)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/arm64-release/app/CoralController.exe",
+      "args": ["--measure-fps", "30"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
       "name": "Unit tests",
       "type": "cppvsdbg",
       "request": "launch",
