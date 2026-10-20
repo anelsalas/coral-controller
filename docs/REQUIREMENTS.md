@@ -270,20 +270,21 @@ Data flow: serial reader thread -> protocol decoder -> JPEG decode -> latest-fra
 - **D-7** (resolves OQ-1) Native ARM64 build, vcpkg triplet `arm64-windows`. Fall back to x64 only for a specific library that truly fails to build or run on ARM64, and record that here.
 - **D-8** (resolves OQ-5) GoogleTest is the test framework; tests registered with CTest and labeled `unit`, `integration`, `hardware`.
 - **D-9** (resolves OQ-7) Manifests are JSON, parsed with Boost.JSON.
-- **D-10** (resolves OQ-6, partly) Binary protocol CRC is CRC-32 (Boost.CRC on the PC; an equivalent table-driven implementation in firmware). Maximum payload size still open (OQ-6b).
+- **D-10** (resolves OQ-6, partly) Binary protocol CRC is CRC-32 (Boost.CRC on the PC; the same constexpr table implementation from shared\protocol is used by firmware and PC; Boost.CRC is the test oracle). Maximum payload size: see D-14.
 - **D-11** Boost via vcpkg, only the used components: Boost.Asio `serial_port` (serial link, stage 1), Boost.JSON (manifests, stage 3), Boost.CRC (stage 2), Boost.Process (flash tools, stage 3).
 - **D-13** (resolves OQ-4) Hardware check 2026-10-19: frames from camera_streaming_serial arrive upright in this setup. The default pipeline keeps a preconfigured Rotate stage (90 CW) disabled; VIEW-010 AC is "default output is upright".
-- **D-12** CMake and Ninja come from the Visual Studio Build Tools "C++ CMake tools" component instead of separate system-wide installs (smaller footprint).
+- **D-14** (resolves OQ-6b) CRLP v1 kMaxPayloadBytes = 128 KiB. A frame payload is an 8-byte FrameInfo plus the JPEG; the firmware JPEG buffer is sized to fit.
+- **D-15** (resolves OQ-2) flashtool.py supports `--ram` (run from RAM, reverts on reset); exposed as `flash-firmware.ps1 -Ram`.
+- **D-16** Firmware: coralmicro SDK as a git submodule (third_party\coralmicro @ c9f665b), built out-of-tree with VS CMake/Ninja and the SDK-pinned Arm GCC 9-2020-q2. The SDK is unmodified. camera_stream_binary disables the 115200 UART console mirror (DbgConsole_Deinit) and sends only over USB CDC in 512-byte chunks.
+- **D-17** Measured 2026-10-19 (Surface, 30 s window): text camera_streaming_serial 0.70 fps; binary camera_stream_binary 18.56 fps (0 dropped/rejected packets); hardware test window 21.3 fps.- **D-12** CMake and Ninja come from the Visual Studio Build Tools "C++ CMake tools" component instead of separate system-wide installs (smaller footprint).
 
 ### Open questions
 
-- **OQ-2** Does the Coral flash tooling support run-from-RAM try-out (FLASH-006)? To be verified against flashtool.py/blhost.
 - **OQ-3** Do the bundled NXP tools (elftosb/blhost/sdphost) have Windows ARM64 binaries, or do they run under x64 emulation?
-- **OQ-6b** Maximum payload size for the binary protocol.
 - **OQ-8** Does the board's USB VID/PID change in bootloader/flashing mode, and how does reconnect detection handle it?
 - **OQ-9** Can the board receive PC->board commands (e.g. HELLO request) on the same serial channel in stage 2?
 
-Resolved: OQ-4 (D-13), OQ-1 (D-7), OQ-5 (D-8), OQ-6 CRC variant (D-10), OQ-7 (D-9).
+Resolved: OQ-4 (D-13), OQ-1 (D-7), OQ-5 (D-8), OQ-6 CRC variant (D-10), OQ-6b (D-14), OQ-2 (D-15), OQ-7 (D-9).
 
 ## 8. Traceability
 

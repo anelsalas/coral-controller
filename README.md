@@ -42,3 +42,30 @@ Run and Debug configurations "Coral Controller (app)", "Unit tests", "Integratio
 
 Write a `FilterBase` subclass with `static constexpr std::string_view kName`, its `FilterParameter`s and `apply()`,
 then add one line `registry.add<MyFilter>();` in `src/filters/BuiltinFilters.cpp`. The panel UI is generated.
+## Firmware (Stage 2: camera_stream_binary)
+
+Board app in `firmware\camera_stream_binary`, built natively on Windows against the
+`third_party\coralmicro` submodule (`git submodule update --init --recursive`; `core.longpaths=true`).
+It shares `shared\protocol` (CRLP v1) with the PC app and streams JPEG frames over USB CDC
+(UART mirror disabled), announcing `camera_stream_binary 1.0.0` at startup and every 30 frames.
+
+The Arm GNU toolchain (gcc-arm-none-eabi 9-2020-q2, pinned by the SDK) is downloaded
+by the SDK into `third_party\coralmicro\third_party\toolchain-win` on the first configure.
+
+VS Code: *Terminal > Run Task*:
+| Task | Script |
+|---|---|
+| Firmware: build camera_stream_binary | `scripts\build-firmware.ps1` -> `build\firmware` |
+| Firmware: flash camera_stream_binary | `scripts\flash-firmware.ps1` |
+| Firmware: run camera_stream_binary from RAM | `scripts\flash-firmware.ps1 -Ram` (reverts on reset) |
+| Firmware: restore camera_streaming_serial (text) | `scripts\flash-firmware.ps1 -RestoreTextApp` |
+| Tests: hardware (board connected) | `scripts\test-hardware.ps1` |
+
+Flashing uses `C:\Users\anels\Source\coralmicro\scripts\flashtool.py` and its venv
+(libusb from the venv's `libusb-package`). Close Coral Controller before flashing.
+`CoralController.exe --measure-fps 30` prints the measured fps and the detected protocol.
+
+Known issue: the SDK's `CdcAcm::Transmit` times out after 200 ms when no host reads; a late
+completion can leave its semaphore out of step, so later packets get corrupted (the viewer shows
+"packet CRC mismatch"). Fix: reset the board (replug, or flash again). It was seen once, after the
+board had streamed for a long time with no host connected.
