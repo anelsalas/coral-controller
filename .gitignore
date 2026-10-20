@@ -8,5 +8,6 @@
 /tools/vcpkg/packages/
 /tools/vcpkg/installed/
 .vs/
-*.user/tools/vcpkg-cache/
+*.user
+/tools/vcpkg-cache/
 /Testing/

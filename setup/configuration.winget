@@ -5,6 +5,10 @@
 # Only system-wide tools live here; all libraries come from vcpkg inside the project.
 # CMake and Ninja are taken from the VS Build Tools "C++ CMake tools" component
 # (no separate system-wide CMake/Ninja install).
+# Arm GNU toolchain (firmware): deliberately NOT a winget package. winget only offers
+# Arm.ArmGnuToolchain 12.x, but coralmicro pins gcc-arm-none-eabi-9-2020-q2-update. The SDK's
+# CMake toolchain file downloads Arm's official win32 zip into the project on first configure:
+#   third_party\coralmicro\third_party\toolchain-win  (no system install, removed by cleanup.ps1)
 properties:
   configurationVersion: 0.2.0
   resources:

@@ -3,7 +3,8 @@
   Remove what Coral Controller setup added.
 .DESCRIPTION
   Inside the project (always safe, rebuildable):
-    build\, vcpkg_installed\, snapshots\, tools\vcpkg-cache\, tools\vcpkg build artifacts.
+    build\ (incl. build\firmware), vcpkg_installed\, snapshots\, tools\vcpkg-cache\, tools\vcpkg build artifacts,
+    the Arm GNU toolchain downloaded by the coralmicro SDK (third_party\coralmicro\third_party\toolchain-win).
   System-wide (only with -SystemTools; each needs a UAC approval):
     Visual Studio 2022 Build Tools (incl. MSVC ARM64, Windows SDK, CMake, Ninja)  winget id Microsoft.VisualStudio.2022.BuildTools
     Git for Windows                                                             winget id Git.Git
@@ -17,7 +18,8 @@ param([switch] $SystemTools)
 $ErrorActionPreference = 'Stop'
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
 $projectArtifacts = @('build', 'vcpkg_installed', 'snapshots', 'tools\vcpkg-cache',
-    'tools\vcpkg\vcpkg.exe', 'tools\vcpkg\buildtrees', 'tools\vcpkg\packages', 'tools\vcpkg\downloads')
+    'tools\vcpkg\vcpkg.exe', 'tools\vcpkg\buildtrees', 'tools\vcpkg\packages', 'tools\vcpkg\downloads',
+    'third_party\coralmicro\third_party\toolchain-win')
 foreach ($relative in $projectArtifacts) {
     $path = Join-Path $ProjectRoot $relative
     if ((Test-Path $path) -and $PSCmdlet.ShouldProcess($path, 'Remove')) {
