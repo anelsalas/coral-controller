@@ -25,7 +25,8 @@ add_executable(coral_unit_tests
     unit/protocol/Crc32Test.cpp
     unit/protocol/PacketCodecTest.cpp
     unit/protocol/SequenceTrackerTest.cpp
-    unit/protocol/PacketWriterTest.cpp)
+    unit/protocol/PacketWriterTest.cpp
+    unit/transport/PacedChunkSinkTest.cpp)
 target_link_libraries(coral_unit_tests PRIVATE coral_test_support Boost::crc)
 gtest_discover_tests(coral_unit_tests DISCOVERY_MODE PRE_TEST PROPERTIES LABELS unit)
 

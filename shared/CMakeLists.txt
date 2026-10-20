@@ -5,5 +5,6 @@ add_library(coral_protocol STATIC
     protocol/Payloads.cpp
     protocol/PacketWriter.cpp
     protocol/PacketDecoder.cpp
-    protocol/SequenceTracker.cpp)
+    protocol/SequenceTracker.cpp
+    transport/PacedChunkSink.cpp)
 target_include_directories(coral_protocol PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
