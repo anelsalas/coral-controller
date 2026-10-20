@@ -44,7 +44,7 @@ function Initialize-Vcpkg {
     # Keep vcpkg's binary cache inside the project (default would be %LOCALAPPDATA%).
     $cache = Join-Path $ProjectRoot 'tools\vcpkg-cache'
     New-Item -ItemType Directory -Force $cache | Out-Null
-    $env:VCPKG_DEFAULT_BINARY_CACHE = $cache
+    $env:VCPKG_BINARY_SOURCES = "clear;files,$cache,readwrite"
     $env:VCPKG_DOWNLOADS = Join-Path $VcpkgRoot 'downloads'
 }
 
