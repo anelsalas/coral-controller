@@ -5,11 +5,12 @@
 
 namespace coral {
 
-// camera_streaming_serial delivers frames rotated by 90 degrees (VIEW-010).
-// Direction confirmed on hardware: see REQUIREMENTS.md OQ-4.
+// VIEW-010 / OQ-4: hardware check on 2026-10-19 showed camera_streaming_serial frames already arrive
+// upright, so the rotate stage is preconfigured (90 clockwise) but disabled by default.
 inline constexpr int kUprightRotationChoice = RotateFilter::kClockwise90;
+inline constexpr bool kRotationEnabledByDefault = false;
 
-// All registered filters in registration order; only the upright rotation is enabled.
+// All registered filters in registration order, all disabled except as configured above.
 FilterPipeline makeDefaultPipeline(const FilterRegistry& registry);
 
 }  // namespace coral

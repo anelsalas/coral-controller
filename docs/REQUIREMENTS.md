@@ -88,7 +88,7 @@ Format: ID - statement. *Rationale.* **AC:** acceptance criteria. **Test:** plan
 
 **VIEW-010** - The app shall apply a rotation correction by default so that frames from the current firmware display upright; the default shall be user-changeable.
 *Rationale:* Current images arrive rotated 90 degrees.
-**AC:** Default pipeline contains an enabled rotate filter with the correcting angle (direction to be confirmed on hardware).
+**AC:** Default pipeline output is upright on hardware; the rotate filter is present and preconfigured, enabled only if the hardware needs it (D-13).
 **Test:** U `DefaultPipeline_IncludesRotationCorrection`; H `Hardware_ViewerShowsUprightImage` (manual check).
 
 **VIEW-011** - The app shall save a snapshot of the currently displayed (processed) frame, and optionally the raw frame, to a PNG file with a timestamped name in a configurable folder.
@@ -272,18 +272,18 @@ Data flow: serial reader thread -> protocol decoder -> JPEG decode -> latest-fra
 - **D-9** (resolves OQ-7) Manifests are JSON, parsed with Boost.JSON.
 - **D-10** (resolves OQ-6, partly) Binary protocol CRC is CRC-32 (Boost.CRC on the PC; an equivalent table-driven implementation in firmware). Maximum payload size still open (OQ-6b).
 - **D-11** Boost via vcpkg, only the used components: Boost.Asio `serial_port` (serial link, stage 1), Boost.JSON (manifests, stage 3), Boost.CRC (stage 2), Boost.Process (flash tools, stage 3).
+- **D-13** (resolves OQ-4) Hardware check 2026-10-19: frames from camera_streaming_serial arrive upright in this setup. The default pipeline keeps a preconfigured Rotate stage (90 CW) disabled; VIEW-010 AC is "default output is upright".
 - **D-12** CMake and Ninja come from the Visual Studio Build Tools "C++ CMake tools" component instead of separate system-wide installs (smaller footprint).
 
 ### Open questions
 
 - **OQ-2** Does the Coral flash tooling support run-from-RAM try-out (FLASH-006)? To be verified against flashtool.py/blhost.
 - **OQ-3** Do the bundled NXP tools (elftosb/blhost/sdphost) have Windows ARM64 binaries, or do they run under x64 emulation?
-- **OQ-4** Exact rotation direction of current frames (90 CW vs CCW) - confirm on hardware.
 - **OQ-6b** Maximum payload size for the binary protocol.
 - **OQ-8** Does the board's USB VID/PID change in bootloader/flashing mode, and how does reconnect detection handle it?
 - **OQ-9** Can the board receive PC->board commands (e.g. HELLO request) on the same serial channel in stage 2?
 
-Resolved: OQ-1 (D-7), OQ-5 (D-8), OQ-6 CRC variant (D-10), OQ-7 (D-9).
+Resolved: OQ-4 (D-13), OQ-1 (D-7), OQ-5 (D-8), OQ-6 CRC variant (D-10), OQ-7 (D-9).
 
 ## 8. Traceability
 

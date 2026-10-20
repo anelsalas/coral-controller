@@ -1,4 +1,4 @@
-// VIEW-010: frames from the current firmware are rotated upright by default.
+// VIEW-010: rotation correction is preconfigured; enabled state follows the hardware finding (OQ-4).
 #include "filters/BuiltinFilters.h"
 #include "filters/DefaultPipeline.h"
 #include "filters/RotateFilter.h"
@@ -15,7 +15,7 @@ TEST(DefaultPipeline, IncludesRotationCorrection) {
 
     ASSERT_GE(pipeline.size(), 6u);
     EXPECT_EQ(pipeline.filterAt(0).name(), RotateFilter::kName);
-    EXPECT_TRUE(pipeline.isEnabled(0));
+    EXPECT_EQ(pipeline.isEnabled(0), kRotationEnabledByDefault);
     EXPECT_EQ(pipeline.filterAt(0).parameters()[RotateFilter::kAngleParameter].asChoiceIndex(),
               kUprightRotationChoice);
     for (std::size_t i = 1; i < pipeline.size(); ++i) {
