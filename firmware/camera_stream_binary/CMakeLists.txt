@@ -2,7 +2,7 @@ set(CAMERA_STREAM_BINARY_VERSION "1.0.0")
 
 add_executable_m7(camera_stream_binary
     camera_stream_binary.cc
-    UsbConsoleSink.cc
+    UsbConsolePort.cc
     ${CORAL_SHARED_PROTOCOL_SOURCES}
 )
 target_include_directories(camera_stream_binary PRIVATE ${CORAL_SHARED_DIR})

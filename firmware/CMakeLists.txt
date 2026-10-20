@@ -20,6 +20,7 @@ set(CORAL_SHARED_PROTOCOL_SOURCES
     ${CORAL_SHARED_DIR}/protocol/CoralProtocol.cpp
     ${CORAL_SHARED_DIR}/protocol/Crc32.cpp
     ${CORAL_SHARED_DIR}/protocol/Payloads.cpp
-    ${CORAL_SHARED_DIR}/protocol/PacketWriter.cpp)
+    ${CORAL_SHARED_DIR}/protocol/PacketWriter.cpp
+    ${CORAL_SHARED_DIR}/transport/PacedChunkSink.cpp)
 
 add_subdirectory(camera_stream_binary)

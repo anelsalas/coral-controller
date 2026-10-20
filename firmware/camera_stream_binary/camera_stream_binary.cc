@@ -4,7 +4,7 @@
 // Embedded rules (PROTO-008): no exceptions, all buffers static with fixed sizes.
 #include <cstdint>
 
-#include "UsbConsoleSink.h"
+#include "UsbConsolePort.h"
 #include "libs/base/led.h"
 #include "libs/camera/camera.h"
 #include "libs/libjpeg/jpeg.h"
@@ -94,8 +94,9 @@ void sendFrame(protocol::PacketWriter& writer, std::size_t jpegBytes) {
 }
 
 void run() {
-    UsbConsoleSink::disableUartMirror();
-    UsbConsoleSink sink;
+    UsbConsolePort::disableUartMirror();
+    UsbConsolePort port;
+    transport::PacedChunkSink sink(port, UsbConsolePort::kPacing);
     protocol::PacketWriter writer(sink);
     coralmicro::LedSet(coralmicro::Led::kStatus, true);
     sendHello(writer);
