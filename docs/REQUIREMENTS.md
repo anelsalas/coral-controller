@@ -233,7 +233,7 @@ Format: ID - statement. *Rationale.* **AC:** acceptance criteria. **Test:** plan
 | CC-003 | Every functional requirement shall have at least one automated test (hardware tests may be manual where noted). | Traceability table (sec. 8). |
 | CC-004 | Hardware access (serial port, process execution, file system, clock) shall be behind interfaces with fakes for tests. | Review; integration tests use fakes. |
 | PERF-001 | Target: UI remains responsive (>= 30 UI fps) while streaming and filtering at 324x324. Target, to be measured. | Measure in app status. |
-| PERF-002 | Target: binary protocol achieves materially higher fps than text protocol (goal >= 5 fps; actual to be measured). | H `Hardware_BinaryFirmwareStreamsFrames`. |
+| PERF-002 | Target: binary protocol achieves materially higher fps than text protocol (goal >= 5 fps; actual to be measured). | H `Hardware.BinaryFirmwareStreamsFrames` (asserts > 1 fps); measured with `CoralController.exe --measure-fps 30` (D-17). |
 | PERF-003 | Target: frame display latency kept to the latest frame (no unbounded queue). | U `LatestFrameBuffer_KeepsOnlyNewest`. |
 | REL-001 | No crash on malformed input, unplug, or tool failure; all such events logged. | Fuzz-style parser tests, VIEW-012, FLASH-009. |
 | REL-002 | Bounded memory: input buffers and queues have named maximum sizes. | Unit tests on limits. |
@@ -276,7 +276,8 @@ Data flow: serial reader thread -> protocol decoder -> JPEG decode -> latest-fra
 - **D-14** (resolves OQ-6b) CRLP v1 kMaxPayloadBytes = 128 KiB. A frame payload is an 8-byte FrameInfo plus the JPEG; the firmware JPEG buffer is sized to fit.
 - **D-15** (resolves OQ-2) flashtool.py supports `--ram` (run from RAM, reverts on reset); exposed as `flash-firmware.ps1 -Ram`.
 - **D-16** Firmware: coralmicro SDK as a git submodule (third_party\coralmicro @ c9f665b), built out-of-tree with VS CMake/Ninja and the SDK-pinned Arm GCC 9-2020-q2. The SDK is unmodified. camera_stream_binary disables the 115200 UART console mirror (DbgConsole_Deinit) and sends only over USB CDC in 512-byte chunks.
-- **D-17** Measured 2026-10-19 (Surface, 30 s window): text camera_streaming_serial 0.70 fps; binary camera_stream_binary 18.56 fps (0 dropped/rejected packets); hardware test window 21.3 fps.- **D-12** CMake and Ninja come from the Visual Studio Build Tools "C++ CMake tools" component instead of separate system-wide installs (smaller footprint).
+- **D-17** Measured 2026-10-19 (Surface, 30 s window): text camera_streaming_serial 0.70 fps; binary camera_stream_binary 18.56 fps (0 dropped/rejected packets); hardware test window 21.3 fps.
+- **D-12** CMake and Ninja come from the Visual Studio Build Tools "C++ CMake tools" component instead of separate system-wide installs (smaller footprint).
 
 ### Open questions
 
@@ -303,16 +304,16 @@ Resolved: OQ-4 (D-13), OQ-1 (D-7), OQ-5 (D-8), OQ-6 CRC variant (D-10), OQ-6b (D
 | VIEW-011 | SnapshotWriter_WritesTimestampedPng, SnapshotWriter_ReportsWriteFailure |
 | VIEW-012 | ConnectionManager_ReconnectsAfterPortLoss, Hardware_ReconnectsAfterReplug (H) |
 | VIEW-013 | FpsCounter_ComputesRateOverWindow, StatusModel_ReflectsConnectionEvents |
-| PROTO-001 | ProtocolHeader_LayoutMatchesSpec, Build_FirmwareBuildsWithArmGnu |
-| PROTO-002 | PacketCodec_EncodesGoldenPacket, PacketCodec_RoundTripsAllTypes |
-| PROTO-003 | PacketDecoder_RejectsBadCrc, PacketDecoder_RejectsOversizeLength, PacketDecoder_RejectsUnknownVersion |
-| PROTO-004 | PacketDecoder_ResyncsAfterGarbage |
-| PROTO-005 | SequenceTracker_CountsGaps, SequenceTracker_HandlesWrapAround |
-| PROTO-006 | HelloPacket_UpdatesBoardIdentity, Hardware_BoardAnnouncesIdentity (H) |
-| PROTO-007 | Hardware_BinaryFirmwareStreamsFrames (H) |
-| PROTO-008 | FirmwarePacketEncoder_FailsOnOversizePayload |
-| PROTO-009 | ProtocolDetector_SelectsTextForFrameLines, ProtocolDetector_SelectsBinaryForMagic |
-| PROTO-010 | VersionCheck_FlagsIncompatibleMajorVersion |
+| PROTO-001 | ProtocolHeader.LayoutMatchesSpec, ProtocolHeader.RejectsMissingMagic; firmware build `scripts\build-firmware.ps1` (compiles shared\protocol with Arm GCC) |
+| PROTO-002 | PacketCodec.EncodesGoldenPacket, PacketCodec.RoundTripsAllTypes, PacketCodec.DecodesByteByByte, Crc32.MatchesStandardCheckValue, Crc32.MatchesBoostCrc32AndIsIncremental |
+| PROTO-003 | PacketDecoder.RejectsBadCrc, PacketDecoder.RejectsOversizeLength, PacketDecoder.RejectsUnknownVersion |
+| PROTO-004 | PacketDecoder.ResyncsAfterGarbage |
+| PROTO-005 | SequenceTracker.CountsGaps, SequenceTracker.HandlesWrapAround, SequenceTracker.TreatsBackwardJumpAsRestart, BinaryViewerSessionTest.ReportsDroppedPackets |
+| PROTO-006 | BinaryViewerSessionTest.HelloPacketUpdatesBoardIdentity, Hardware.BoardAnnouncesIdentity (H) |
+| PROTO-007 | BinaryViewerSessionTest.FramePacketReachesDisplay, PacedChunkSink.* (6 tests, D-18), Hardware.BinaryFirmwareStreamsFrames (H) |
+| PROTO-008 | FirmwarePacketEncoder.FailsOnOversizePayload, FirmwarePacketEncoder.ReportsSinkFailureAndConsumesSequence, FirmwarePacketEncoder.SplitPayloadEqualsContiguousPayload |
+| PROTO-009 | ProtocolDetector.SelectsTextForFrameLines, ProtocolDetector.SelectsBinaryForMagic, ProtocolDetector.WaitsUntilDecisionIsPossible, ProtocolDetector.FallsBackToTextAfterProbeLimit, BinaryViewerSessionTest.TextProtocolStillWorks, BinaryViewerSessionTest.ReconnectRedetectsProtocol |
+| PROTO-010 | BinaryViewerSessionTest.VersionCheckFlagsIncompatibleMajorVersion |
 | FLASH-001 | AppLibrary_ListsValidApps, AppLibrary_ReportsInvalidEntries |
 | FLASH-002 | ManifestParser_ParsesValidManifest, ManifestParser_NamesMissingField |
 | FLASH-003 | AppListModel_MarksRunningApp |
