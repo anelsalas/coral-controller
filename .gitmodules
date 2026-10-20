@@ -5,3 +5,4 @@
 [submodule "third_party/coralmicro"]
 	path = third_party/coralmicro
 	url = https://github.com/google-coral/coralmicro.git
+	ignore = dirty
