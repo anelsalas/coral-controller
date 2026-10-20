@@ -30,7 +30,7 @@ if ($RestoreTextApp) {
 foreach ($required in @($python, $flashtool, $elf)) {
     if (-not (Test-Path $required)) { throw "Missing: $required" }
 }
-if (Get-Process CoralController -ErrorAction SilentlyContinue) {
+if (Get-CimInstance Win32_Process -Filter "Name='CoralController.exe'") {
     throw 'Coral Controller is running and may hold the board. Close it and retry.'
 }
 

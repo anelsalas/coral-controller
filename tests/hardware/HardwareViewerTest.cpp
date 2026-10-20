@@ -86,3 +86,53 @@ TEST(Hardware, ReconnectsAfterReplug) {
     ASSERT_TRUE(viewer.runUntil([&] { return viewer.frames.takeLatest().has_value(); }, kFirstFrameTimeout));
     viewer.connection.shutdown();
 }
+// PROTO-006 / PROTO-007: need camera_stream_binary on the board; skipped for the text firmware.
+namespace {
+constexpr auto kBinaryMeasureWindow = 10s;
+
+void skipUnlessBinaryFirmware(LiveViewer& viewer) {
+    const bool detected = viewer.runUntil(
+        [&] { return viewer.status.snapshot(viewer.clock.now()).protocol != StatusModel::kDetectingProtocol &&
+                     viewer.connection.state() == ConnectionState::Connected; },
+        kFirstFrameTimeout);
+    ASSERT_TRUE(detected) << "board not connected / protocol not detected";
+    if (viewer.status.snapshot(viewer.clock.now()).protocol != StatusModel::kBinaryProtocolName) {
+        GTEST_SKIP() << "board runs the text firmware; flash camera_stream_binary to run this test";
+    }
+}
+}  // namespace
+
+TEST(Hardware, BoardAnnouncesIdentity) {
+    LiveViewer viewer;
+    skipUnlessBinaryFirmware(viewer);
+    if (::testing::Test::IsSkipped() || ::testing::Test::HasFatalFailure()) return;
+
+    const bool announced = viewer.runUntil(
+        [&] { return viewer.status.snapshot(viewer.clock.now()).boardApp.rfind("camera_stream_binary", 0) == 0; },
+        kFirstFrameTimeout);
+    viewer.connection.shutdown();
+
+    EXPECT_TRUE(announced) << viewer.status.snapshot(viewer.clock.now()).boardApp;
+    std::cout << "Board app: " << viewer.status.snapshot(viewer.clock.now()).boardApp << "\n";
+}
+
+TEST(Hardware, BinaryFirmwareStreamsFrames) {
+    LiveViewer viewer;
+    skipUnlessBinaryFirmware(viewer);
+    if (::testing::Test::IsSkipped() || ::testing::Test::HasFatalFailure()) return;
+    ASSERT_TRUE(viewer.runUntil([&] { return viewer.status.snapshot(viewer.clock.now()).framesDecoded > 0; },
+                                kFirstFrameTimeout));
+
+    const auto startFrames = viewer.status.snapshot(viewer.clock.now()).framesDecoded;
+    const auto start = std::chrono::steady_clock::now();
+    viewer.runUntil([] { return false; }, std::chrono::duration_cast<std::chrono::seconds>(kBinaryMeasureWindow));
+    const std::chrono::duration<double> elapsed = std::chrono::steady_clock::now() - start;
+    const auto status = viewer.status.snapshot(viewer.clock.now());
+    viewer.connection.shutdown();
+
+    const double fps = static_cast<double>(status.framesDecoded - startFrames) / elapsed.count();
+    std::cout << "Measured binary fps: " << fps << " (dropped " << status.droppedPackets << ", rejected "
+              << status.rejectedPackets << ")\n";
+    EXPECT_GT(fps, 1.0);
+    EXPECT_EQ(status.rejectedPackets, 0u);
+}

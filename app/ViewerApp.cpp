@@ -44,6 +44,12 @@ public:
                 ui_.draw(texture_, panel_, status_.snapshot(clock_.now()), pipelineError_, snapshotMessage_);
             if (const auto presented = window_.endFrame(); !presented.ok()) status_.onError(presented.error());
             if (requests.saveSnapshot) saveSnapshots();
+            if (options_.measureSeconds) {
+                if (const auto finished = measureStep(); finished) return *finished;
+                if (clock_.now() - started > kSmokeTimeout + std::chrono::seconds(*options_.measureSeconds)) {
+                    return failSmokeRun();
+                }
+            }
             if (options_.snapshotAfterFrames) {
                 if (displayedFrames_ >= *options_.snapshotAfterFrames) return finishSmokeRun();
                 if (clock_.now() - started > kSmokeTimeout) return failSmokeRun();
@@ -93,6 +99,28 @@ private:
         return saveSnapshots() ? kExitOk : kExitSnapshotFailed;
     }
 
+    // Measured over decoded frames between the first frame and the end of the window.
+    std::optional<int> measureStep() {
+        const StatusSnapshot status = status_.snapshot(clock_.now());
+        if (!measureStart_) {
+            if (status.framesDecoded == 0) return std::nullopt;
+            measureStart_ = clock_.now();
+            measureStartFrames_ = status.framesDecoded;
+            return std::nullopt;
+        }
+        const std::chrono::duration<double> elapsed = clock_.now() - *measureStart_;
+        if (elapsed.count() < *options_.measureSeconds) return std::nullopt;
+        const auto frames = status.framesDecoded - measureStartFrames_;
+        std::cout << "MEASURED protocol=\"" << status.protocol << "\" board_app=\"" << status.boardApp
+                  << "\" frames=" << frames << " seconds=" << elapsed.count()
+                  << " fps=" << static_cast<double>(frames) / elapsed.count()
+                  << " dropped_packets=" << status.droppedPackets << " rejected_packets=" << status.rejectedPackets
+                  << " invalid_base64=" << status.invalidBase64Frames << " jpeg_errors=" << status.jpegDecodeErrors
+                  << std::endl;
+        connection_.shutdown();
+        return kExitOk;
+    }
+
     int failSmokeRun() {
         std::cerr << "Smoke run: timeout, displayed " << displayedFrames_
                   << " frames; last error: " << status_.snapshot(clock_.now()).lastError << std::endl;
@@ -120,6 +148,8 @@ private:
     std::string pipelineError_;
     std::string snapshotMessage_;
     int displayedFrames_ = 0;
+    std::optional<TimePoint> measureStart_;
+    std::uint64_t measureStartFrames_ = 0;
 };
 
 }  // namespace
