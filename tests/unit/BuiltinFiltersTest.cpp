@@ -11,10 +11,15 @@
 using namespace coral;
 
 namespace {
+cv::Mat grayImage(int rows, int cols, std::initializer_list<std::uint8_t> values) {
+    std::vector<std::uint8_t> pixels(values);
+    return cv::Mat(rows, cols, CV_8UC1, pixels.data()).clone();
+}
+
 // 2 rows x 3 columns gray image with distinct values:
 //   1 2 3
 //   4 5 6
-cv::Mat numberedImage() { return (cv::Mat_<std::uint8_t>(2, 3) << 1, 2, 3, 4, 5, 6); }
+cv::Mat numberedImage() { return grayImage(2, 3, {1, 2, 3, 4, 5, 6}); }
 }  // namespace
 
 TEST(RotateFilter, Rotates90Clockwise) {
@@ -24,7 +29,7 @@ TEST(RotateFilter, Rotates90Clockwise) {
     const cv::Mat rotated = filter.apply(numberedImage());
 
     // Clockwise: first row becomes the left column read bottom-up.
-    const cv::Mat expected = (cv::Mat_<std::uint8_t>(3, 2) << 4, 1, 5, 2, 6, 3);
+    const cv::Mat expected = grayImage(3, 2, {4, 1, 5, 2, 6, 3});
     ASSERT_EQ(rotated.size(), expected.size());
     EXPECT_EQ(cv::countNonZero(rotated != expected), 0);
 }
@@ -35,7 +40,7 @@ TEST(FlipFilter, FlipsHorizontally) {
 
     const cv::Mat flipped = filter.apply(numberedImage());
 
-    const cv::Mat expected = (cv::Mat_<std::uint8_t>(2, 3) << 3, 2, 1, 6, 5, 4);
+    const cv::Mat expected = grayImage(2, 3, {3, 2, 1, 6, 5, 4});
     EXPECT_EQ(cv::countNonZero(flipped != expected), 0);
 }
 
@@ -69,13 +74,13 @@ TEST(EdgeFilter, DetectsStepEdge) {
 }
 
 TEST(ThresholdFilter, BinarizesAtLevel) {
-    const cv::Mat ramp = (cv::Mat_<std::uint8_t>(1, 4) << 10, 100, 150, 250);
+    const cv::Mat ramp = grayImage(1, 4, {10, 100, 150, 250});
     ThresholdFilter filter;
     filter.parameters()[ThresholdFilter::kLevelParameter].setValue(120);
 
     const cv::Mat binary = filter.apply(ramp);
 
-    const cv::Mat expected = (cv::Mat_<std::uint8_t>(1, 4) << 0, 0, 255, 255);
+    const cv::Mat expected = grayImage(1, 4, {0, 0, 255, 255});
     EXPECT_EQ(cv::countNonZero(binary != expected), 0);
 }
 

@@ -9,7 +9,7 @@ if(MSVC)
     # Strict warnings for our code; third-party headers are external (silenced).
     add_compile_options(/W4 /WX /permissive- /utf-8 /EHsc /external:anglebrackets /external:W0)
 endif()
-add_compile_definitions(_WIN32_WINNT=0x0A00 WIN32_LEAN_AND_MEAN NOMINMAX)
+add_compile_definitions(_WIN32_WINNT=0x0A00 WIN32_LEAN_AND_MEAN NOMINMAX UNICODE _UNICODE)
 
 find_package(OpenCV CONFIG REQUIRED COMPONENTS core imgproc imgcodecs)
 find_package(boost_asio CONFIG REQUIRED)

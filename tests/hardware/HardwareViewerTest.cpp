@@ -72,7 +72,9 @@ TEST(Hardware, ViewerShowsUprightImage) {
 }
 
 TEST(Hardware, ReconnectsAfterReplug) {
-    if (std::getenv("CORAL_MANUAL_REPLUG") == nullptr) {
+    std::size_t valueLength = 0;
+    getenv_s(&valueLength, nullptr, 0, "CORAL_MANUAL_REPLUG");
+    if (valueLength == 0) {
         GTEST_SKIP() << "set CORAL_MANUAL_REPLUG=1 and unplug/replug the board during the test";
     }
     LiveViewer viewer;
