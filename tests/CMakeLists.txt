@@ -18,8 +18,15 @@ add_executable(coral_unit_tests
     unit/DefaultPipelineTest.cpp
     unit/SnapshotWriterTest.cpp
     unit/FpsCounterTest.cpp
-    unit/StatusModelTest.cpp)
-target_link_libraries(coral_unit_tests PRIVATE coral_test_support)
+    unit/StatusModelTest.cpp
+    unit/ProtocolDetectorTest.cpp
+    unit/BinaryViewerSessionTest.cpp
+    unit/protocol/ProtocolHeaderTest.cpp
+    unit/protocol/Crc32Test.cpp
+    unit/protocol/PacketCodecTest.cpp
+    unit/protocol/SequenceTrackerTest.cpp
+    unit/protocol/PacketWriterTest.cpp)
+target_link_libraries(coral_unit_tests PRIVATE coral_test_support Boost::crc)
 gtest_discover_tests(coral_unit_tests DISCOVERY_MODE PRE_TEST PROPERTIES LABELS unit)
 
 # Integration tests: real threads, fake serial port / enumerator / clock.

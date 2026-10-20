@@ -14,7 +14,7 @@ TEST(StatusModel, ReflectsConnectionEvents) {
     auto connected = status.snapshot(TimePoint{});
     EXPECT_EQ(connected.link, LinkState::Connected);
     EXPECT_EQ(connected.portName, "COM8");
-    EXPECT_EQ(connected.protocol, "text (FRAME:base64)");
+    EXPECT_EQ(connected.protocol, StatusModel::kDetectingProtocol);
     EXPECT_EQ(connected.boardApp, "unknown");
 
     status.onDisconnected("device unplugged");
