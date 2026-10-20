@@ -12,6 +12,7 @@
 #include "imaging/SnapshotWriter.h"
 #include "viewer/ViewerSession.h"
 
+#include <cstdlib>
 #include <iostream>
 
 namespace coral::app {
@@ -22,6 +23,7 @@ constexpr int kExitOk = 0;
 constexpr int kExitStartupFailed = 1;
 constexpr int kExitSmokeTimeout = 2;
 constexpr int kExitSnapshotFailed = 3;
+constexpr int kExitDeviceStuck = 4;
 constexpr auto kSmokeTimeout = std::chrono::seconds(60);
 
 class Viewer {
@@ -36,8 +38,8 @@ public:
 
     int run() {
         const TimePoint started = clock_.now();
+        connection_.start();
         while (window_.pumpMessages()) {
-            connection_.tick();
             showNewestFrame();
             window_.beginFrame();
             const UiRequests requests =
@@ -55,10 +57,19 @@ public:
                 if (clock_.now() - started > kSmokeTimeout) return failSmokeRun();
             }
         }
-        return kExitOk;
+        return stopConnection(kExitOk);
     }
 
 private:
+    // The device is only touched on the connection worker. If it is wedged (shutdown timed out),
+    // the worker still uses port_, so exit without running destructors.
+    int stopConnection(int exitCode) {
+        if (connection_.shutdown()) return exitCode;
+        std::cerr << "Board did not release the serial port; exiting without closing it." << std::endl;
+        std::cout.flush();
+        std::_Exit(exitCode == kExitOk ? kExitDeviceStuck : exitCode);
+    }
+
     static FilterRegistry registryWithBuiltins() {
         FilterRegistry registry;
         registerBuiltinFilters(registry);
@@ -95,8 +106,7 @@ private:
 
     int finishSmokeRun() {
         std::cout << "Smoke run: displayed " << displayedFrames_ << " frames" << std::endl;
-        connection_.shutdown();
-        return saveSnapshots() ? kExitOk : kExitSnapshotFailed;
+        return stopConnection(saveSnapshots() ? kExitOk : kExitSnapshotFailed);
     }
 
     // Measured over decoded frames between the first frame and the end of the window.
@@ -117,15 +127,13 @@ private:
                   << " dropped_packets=" << status.droppedPackets << " rejected_packets=" << status.rejectedPackets
                   << " invalid_base64=" << status.invalidBase64Frames << " jpeg_errors=" << status.jpegDecodeErrors
                   << std::endl;
-        connection_.shutdown();
-        return kExitOk;
+        return stopConnection(kExitOk);
     }
 
     int failSmokeRun() {
         std::cerr << "Smoke run: timeout, displayed " << displayedFrames_
                   << " frames; last error: " << status_.snapshot(clock_.now()).lastError << std::endl;
-        connection_.shutdown();
-        return kExitSmokeTimeout;
+        return stopConnection(kExitSmokeTimeout);
     }
 
     const AppOptions& options_;

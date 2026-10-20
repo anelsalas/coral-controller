@@ -38,10 +38,10 @@ struct LiveViewer {
 
     template <typename Predicate>
     bool runUntil(Predicate predicate, std::chrono::seconds limit) {
+        connection.start();
         const auto deadline = std::chrono::steady_clock::now() + limit;
         while (!predicate()) {
             if (std::chrono::steady_clock::now() > deadline) return false;
-            connection.tick();
             std::this_thread::sleep_for(10ms);
         }
         return true;

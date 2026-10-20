@@ -4,7 +4,6 @@ add_library(coral_core STATIC
     device/UsbHardwareId.cpp
     device/WindowsPortEnumerator.cpp
     device/AsioSerialPort.cpp
-    device/SerialReader.cpp
     device/ConnectionManager.cpp
     protocol/Base64.cpp
     protocol/TextFrameParser.cpp
