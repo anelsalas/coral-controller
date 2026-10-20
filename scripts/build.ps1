@@ -17,11 +17,7 @@ $ProjectRoot = Split-Path -Parent $PSScriptRoot
 $VcpkgRoot   = Join-Path $ProjectRoot 'tools\vcpkg'
 $Preset      = "arm64-$Config"
 
-function Invoke-Checked([string] $What, [scriptblock] $Command) {
-    Write-Host "==> $What" -ForegroundColor Cyan
-    & $Command
-    if ($LASTEXITCODE -ne 0) { throw "$What failed with exit code $LASTEXITCODE" }
-}
+. (Join-Path $PSScriptRoot 'lib\Invoke-Checked.ps1')
 
 function Enter-Arm64DevShell {
     if (Get-Command cl.exe -ErrorAction SilentlyContinue) { return }

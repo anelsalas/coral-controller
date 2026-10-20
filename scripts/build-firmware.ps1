@@ -14,11 +14,7 @@ $BuildDir = Join-Path $ProjectRoot 'build\firmware'
 # flashtool.py needs the SDK's flashloader and elf_loader images from the same build dir.
 $Targets = @('camera_stream_binary', 'elf_loader', 'flashloader')
 
-function Invoke-Checked([string] $What, [scriptblock] $Command) {
-    Write-Host "==> $What" -ForegroundColor Cyan
-    & $Command
-    if ($LASTEXITCODE -ne 0) { throw "$What failed with exit code $LASTEXITCODE" }
-}
+. (Join-Path $PSScriptRoot 'lib\Invoke-Checked.ps1')
 
 function Add-VsCMakeAndNinjaToPath {
     $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
