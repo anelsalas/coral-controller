@@ -1,0 +1,9 @@
+{
+  "cmake.useCMakePresets": "always",
+  "cmake.configureOnOpen": false,
+  "cmake.cmakePath": "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe",
+  "cmake.ctest.testExplorerIntegrationEnabled": true,
+  "cmake.environment": { "VCPKG_ROOT": "${workspaceFolder}/tools/vcpkg" },
+  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+  "files.exclude": { "build/**": true, "vcpkg_installed/**": true }
+}
