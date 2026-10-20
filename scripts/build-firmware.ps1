@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Build the board firmware (camera_stream_binary + SDK elf_loader) with the coralmicro SDK.
+  Build the board firmware (camera_stream_binary + SDK elf_loader/flashloader) with the coralmicro SDK.
 .DESCRIPTION
   Uses CMake + Ninja from Visual Studio 2022 Build Tools and the Arm GNU toolchain that the SDK
   toolchain file downloads (gcc-arm-none-eabi-9-2020-q2, Arm's official win32 zip) into
@@ -11,7 +11,8 @@ param([switch] $Clean)
 $ErrorActionPreference = 'Stop'
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
 $BuildDir = Join-Path $ProjectRoot 'build\firmware'
-$Targets = @('camera_stream_binary', 'elf_loader')
+# flashtool.py needs the SDK's flashloader and elf_loader images from the same build dir.
+$Targets = @('camera_stream_binary', 'elf_loader', 'flashloader')
 
 function Invoke-Checked([string] $What, [scriptblock] $Command) {
     Write-Host "==> $What" -ForegroundColor Cyan

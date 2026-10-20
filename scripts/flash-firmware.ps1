@@ -34,9 +34,16 @@ if (Get-CimInstance Win32_Process -Filter "Name='CoralController.exe'") {
     throw 'Coral Controller is running and may hold the board. Close it and retry.'
 }
 
+# pyusb needs a libusb backend; the venv's libusb-package wheel bundles libusb-1.0.dll.
+$libusbDir = Join-Path $CoralMicroTools 'venv\Lib\site-packages\libusb_package'
+if (-not (Test-Path (Join-Path $libusbDir 'libusb-1.0.dll'))) { throw "Missing libusb-1.0.dll in $libusbDir" }
+$env:PATH = "$libusbDir;$env:PATH"
+
 $arguments = @($flashtool, '--build_dir', $buildDir, '--elf_path', $elf)
 if ($Ram) { $arguments += '--ram' }
 Write-Host "==> flashtool.py $($arguments[1..($arguments.Count-1)] -join ' ')" -ForegroundColor Cyan
-& $python @arguments
+# flashtool.py exits 0 even when it reports a missing libusb, so check its output too.
+$output = & $python @arguments 2>&1 | Tee-Object -Variable output | ForEach-Object { Write-Host $_; $_ }
 if ($LASTEXITCODE -ne 0) { throw "flashtool.py failed with exit code $LASTEXITCODE" }
+if (($output | Out-String) -match 'cannot find libusb') { throw 'flashtool.py could not load libusb; nothing was flashed.' }
 Write-Host 'Flashed.' -ForegroundColor Green
