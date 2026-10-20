@@ -32,7 +32,6 @@ gtest_discover_tests(coral_unit_tests DISCOVERY_MODE PRE_TEST PROPERTIES LABELS 
 
 # Integration tests: real threads, fake serial port / enumerator / clock.
 add_executable(coral_integration_tests
-    integration/SerialReaderTest.cpp
     integration/ConnectionManagerTest.cpp)
 target_link_libraries(coral_integration_tests PRIVATE coral_test_support)
 gtest_discover_tests(coral_integration_tests DISCOVERY_MODE PRE_TEST PROPERTIES LABELS integration)

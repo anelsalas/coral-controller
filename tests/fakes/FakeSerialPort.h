@@ -2,6 +2,7 @@
 #include "device/ISerialPort.h"
 
 #include <algorithm>
+#include <atomic>
 #include <condition_variable>
 #include <deque>
 #include <mutex>
@@ -26,7 +27,22 @@ public:
 
     void setReadDelay(std::chrono::milliseconds delay) { readDelay_ = delay; }
 
+    // Simulates a wedged USB driver: open()/close() block until releaseBlockedCalls().
+    void blockOpen() { setBlocked(blockOpen_); }
+    void blockClose() { setBlocked(blockClose_); }
+    void releaseBlockedCalls() {
+        {
+            std::lock_guard lock(gateMutex_);
+            blockOpen_ = blockClose_ = false;
+        }
+        gate_.notify_all();
+    }
+    // Number of open()/close() calls that have returned to the caller.
+    int returnedCalls() const { return returnedCalls_.load(); }
+
     Status open(const std::string& portName, unsigned baudRate) override {
+        waitWhileBlocked(blockOpen_);
+        ++returnedCalls_;
         std::lock_guard lock(mutex_);
         openedPortName_ = portName;
         openedBaudRate_ = baudRate;
@@ -36,6 +52,8 @@ public:
     }
 
     Status close() override {
+        waitWhileBlocked(blockClose_);
+        ++returnedCalls_;
         std::lock_guard lock(mutex_);
         isOpen_ = false;
         return okStatus();
@@ -79,6 +97,21 @@ public:
 
 private:
     static constexpr std::chrono::milliseconds kQuietLineWait{2};
+
+    void setBlocked(bool& flag) {
+        std::lock_guard lock(gateMutex_);
+        flag = true;
+    }
+    void waitWhileBlocked(const bool& flag) {
+        std::unique_lock lock(gateMutex_);
+        gate_.wait(lock, [&] { return !flag; });
+    }
+
+    std::mutex gateMutex_;
+    std::condition_variable gate_;
+    bool blockOpen_ = false;
+    bool blockClose_ = false;
+    std::atomic<int> returnedCalls_{0};
 
     struct Step {
         ReadStatus status;
